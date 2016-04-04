@@ -26,3 +26,8 @@ services:
   ultimate_cron.discovery:
     class: Drupal\ultimate_cron\CronJobDiscovery
     arguments: ['@module_handler']
+  ultimate_cron.subscriber:
+    class: Drupal\ultimate_cron\EventSubscriber\UltimateCronSubscriber
+    arguments: ['@config.factory']
+    tags:
+      - { name: event_subscriber }
