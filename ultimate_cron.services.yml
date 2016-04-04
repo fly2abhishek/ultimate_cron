@@ -28,6 +28,8 @@ services:
     arguments: ['@module_handler']
   ultimate_cron.subscriber:
     class: Drupal\ultimate_cron\EventSubscriber\UltimateCronSubscriber
-    arguments: ['@config.factory']
+    arguments: ['@config.factory', '@ultimate_cron.shutdown']
     tags:
       - { name: event_subscriber }
+  ultimate_cron.shutdown:
+    class: Drupal\ultimate_cron\UltimateCronShutdown

@@ -8,6 +8,7 @@ namespace Drupal\ultimate_cron\Lock;
 
 use Drupal\Core\Database\Connection;
 use Drupal\ultimate_cron\Lock\LockInterface;
+use Drupal\ultimate_cron\UltimateCronShutdownInterface;
 use PDOException;
 use PDO;
 
@@ -23,8 +24,11 @@ class Lock implements LockInterface {
 
   private $connection;
 
-  public function __construct(Connection $connection) {
+  protected $ultimateCronShutdown;
+
+  public function __construct(Connection $connection, UltimateCronShutdownInterface $ultimate_cron_shutdown) {
     $this->connection = $connection;
+    $this->ultimateCronShutdown = $ultimate_cron_shutdown;
   }
 
   /**
@@ -65,10 +69,10 @@ class Lock implements LockInterface {
     // First, ensure cleanup.
     if (!isset($this->locks)) {
       $this->locks = array();
-      ultimate_cron_register_shutdown_function(array(
+      $this->ultimateCronShutdown->registerShutdownFunction([
         $this,
-        'shutdown'
-      ));
+        'shutdown',
+      ]);
     }
 
     $target = _ultimate_cron_get_transactional_safe_connection();

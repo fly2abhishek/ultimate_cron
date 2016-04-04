@@ -4,6 +4,7 @@
  * Contains \Drupal\ultimate_cron\Logger\LoggerBase.
  */
 namespace Drupal\ultimate_cron\Logger;
+
 use Drupal\Core\Logger\RfcLogLevel;
 use Drupal\Core\Url;
 use Drupal\ultimate_cron\CronPlugin;
@@ -58,10 +59,10 @@ abstract class LoggerBase extends CronPlugin implements LoggerInterface {
       $class::$log_entries = array();
       // Since we may already be inside a drupal_register_shutdown_function()
       // we cannot use that. Use PHPs register_shutdown_function() instead.
-      ultimate_cron_register_shutdown_function(array(
+      \Drupal::service('ultimate_cron.shutdown')->registerShutdownFunction([
         $class,
-        'catchMessagesShutdownWrapper'
-      ), $class);
+        'catchMessagesShutdownWrapper',
+      ], [$class]);
     }
     $class::$log_entries[$log_entry->lid] = $log_entry;
   }

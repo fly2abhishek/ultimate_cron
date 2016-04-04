@@ -7,6 +7,7 @@
  */
 
 namespace Drupal\ultimate_cron\Lock;
+
 /**
  * Class for handling lock functions.
  *
@@ -53,10 +54,10 @@ class LockMemcache {
     // First, ensure cleanup.
     if (!isset(self::$locks)) {
       self::$locks = array();
-      ultimate_cron_register_shutdown_function(array(
+      \Drupal\ultimate_cron\UltimateCronShutdown::registerShutdownFunction([
         'Drupal\ultimate_cron\Lock\LockMemcache',
-        'shutdown'
-      ));
+        'shutdown',
+      ]);
     }
 
     // Ensure that the timeout is at least 1 sec. This is a limitation

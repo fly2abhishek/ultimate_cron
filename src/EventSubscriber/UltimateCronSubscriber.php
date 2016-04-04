@@ -7,12 +7,19 @@
 
 namespace Drupal\ultimate_cron\EventSubscriber;
 
-use Drupal\Core\Database\Database;
+
+use Drupal\ultimate_cron\UltimateCronShutdownInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Drupal\Core\Session\SessionManager;
+use Symfony\Component\HttpKernel\Event\PostResponseEvent;
+use Symfony\Component\HttpKernel\KernelEvents;
+use Drupal\Core\Database\Database;
 use Drupal\Core\Config\ConfigFactory;
 use Symfony\Component\HttpKernel\Event\GetResponseEvent;
-use Symfony\Component\HttpKernel\KernelEvents;
+
+/**
+ * Class UltimateCronSubscriber.
+ *
+ * @package Drupal\ultimate_cron
 
 /**
  * An event subscriber that adds Ultimate Cron database connection.
@@ -48,10 +55,18 @@ class UltimateCronSubscriber implements EventSubscriberInterface {
   protected $ultimateCronManager;
 
   /**
+   * The ultimate_cron manager service.
+   *
+   * @var \Drupal\ultimate_cron\UltimateCronShutdownInterface
+   */
+  protected $ultimateCronShutdown;
+
+  /**
    * Constructor.
    */
-  public function __construct(ConfigFactory $config_factory) {
+  public function __construct(ConfigFactory $config_factory, UltimateCronShutdownInterface $ultimate_cron_shutdown) {
     $this->config = $config_factory->get('ultimate_cron.settings');
+    $this->ultimateCronShutdown = $ultimate_cron_shutdown;
   }
 
   /**
@@ -59,6 +74,7 @@ class UltimateCronSubscriber implements EventSubscriberInterface {
    */
   static function getSubscribedEvents() {
     $events[KernelEvents::REQUEST][] = ['onRequest', 100];
+    $events[KernelEvents::TERMINATE][] = ['onTerminate', 0];
     return $events;
   }
 
@@ -73,6 +89,15 @@ class UltimateCronSubscriber implements EventSubscriberInterface {
       $info = Database::getConnectionInfo('default');
       Database::addConnectionInfo('default', 'ultimate_cron', $info['default']);
     }
+  }
+
+  /**
+   * This method is called whenever the kernel.terminate event is dispatched.
+   *
+   * @param GetTerminateEvent $event
+   */
+  public function onTerminate(PostResponseEvent $event) {
+    $this->ultimateCronShutdown->outOfMemoryProtection();
   }
 
 }
