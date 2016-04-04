@@ -1,6 +1,7 @@
 <?php
 /**
  * @file
+ * Contains \Drupal\ultimate_cron\Plugin\ultimate_cron\Logger\CacheLogger.
  * Cache logger for Ultimate Cron.
  */
 
@@ -69,24 +70,37 @@ class CacheLogger extends LoggerBase {
    * {@inheritdoc}
    */
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
-    $form['bin'] = array(
+
+    $config = \Drupal::service('config.factory')->get('ultimate_cron.settings');
+    $plugin_id = $this->pluginId;
+    $defination = $this->getPluginDefinition();
+    $form['logger_default']['#options'][$plugin_id] = $defination['title'];
+
+    $form = [
+      '#type' => 'fieldset',
+      '#title' => $defination['title'],
+      '#tree' => TRUE,
+    ];
+
+    $form['bin'] = [
       '#type' => 'textfield',
       '#title' => t('Cache bin'),
       '#description' => t('Select which cache bin to use for storing logs.'),
-      '#default_value' => $this->configuration['bin'],
+      '#default_value' => $config->get('logger.cache.bin'),
       '#fallback' => TRUE,
       '#required' => TRUE,
-    );
+    ];
 
-    $form['timeout'] = array(
+    $form['timeout'] = [
       '#type' => 'textfield',
       '#title' => t('Cache timeout'),
       '#description' => t('Seconds before cache entry expires (0 = never, -1 = on next general cache wipe).'),
-      '#default_value' => $this->configuration['timeout'],
+      '#default_value' => $config->get('logger.cache.timeout'),
       '#fallback' => TRUE,
       '#required' => TRUE,
-    );
+    ];
 
     return $form;
   }
+
 }

@@ -11,24 +11,37 @@ queue:
     enabled: TRUE
     threads: 4
     threshold: 10
+default_plugins:
+  launcher: serial
+  scheduler: simple
+  logger: database
 launcher:
-  poorman_keepalive: FALSE
-  thread: 'any'
-  max_threads: 1
-  lock_timeout: 3600
-  max_execution_time: 3600
+  serial:
+    id: 'serial'
+    timeouts:
+      lock_timeout: 3600
+      max_execution_time: 3600
+    launcher:
+      thread: 1
+      max_threads: 1
+      poorman_keepalive: FALSE
 logger:
   cache:
+    id: 'cache'
     bin: 'cache_ultimate_cron'
     timeout: 0
   database:
-    method: 3
+    id: 'database'
+    method: '3'
     expire: 1209600
     retain: 1000
 scheduler:
   crontab:
+    id: 'crontab'
     catch_up: 86400
     rules:
       - '*/10+@ * * * *'
   simple:
-    rule: '*/15+@ * * * *'
+    id: 'simple'
+    rules:
+      - '*/15+@ * * * *'

@@ -25,7 +25,7 @@ services:
     arguments: ['@cache.signal', '@lock']
   ultimate_cron.discovery:
     class: Drupal\ultimate_cron\CronJobDiscovery
-    arguments: ['@module_handler']
+    arguments: ['@module_handler', '@config.factory']
   ultimate_cron.subscriber:
     class: Drupal\ultimate_cron\EventSubscriber\UltimateCronSubscriber
     arguments: ['@config.factory', '@ultimate_cron.shutdown']

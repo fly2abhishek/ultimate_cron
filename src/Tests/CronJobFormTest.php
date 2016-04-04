@@ -22,7 +22,11 @@ class CronJobFormTest extends WebTestBase {
    *
    * @var array
    */
-  public static $modules = array('ultimate_cron', 'block');
+  public static $modules = [
+    'ultimate_cron',
+    'block',
+    'ultimate_cron_plugin_test',
+  ];
 
   /**
    * A user with permission to create and edit books and to administer blocks.
@@ -69,6 +73,7 @@ class CronJobFormTest extends WebTestBase {
     $this->drupalGet('admin/config/system/cron/jobs/manage/' . $this->job_id);
     $this->assertResponse('200');
 
+    print_r($this->job_name);
     // Set new cron job configuration and save the old job name.
     $job = CronJob::load($this->job_id);
     $old_job_name = $job->label();
@@ -99,7 +104,7 @@ class CronJobFormTest extends WebTestBase {
 
     // Change time when cron runs, check the 'Scheduled' label is updated.
     $this->clickLink(t('Edit'));
-    $this->drupalPostForm(NULL, ['scheduler[configuration][rules][0]' => '0+@ */6 * * *'], t('Save'));
+    $this->drupalPostForm(NULL, ['scheduler[rules][0]' => '0+@ */6 * * *'], t('Save'));
     $this->assertText('Every 6 hours');
 
     // Test disabling a job.
@@ -150,12 +155,13 @@ class CronJobFormTest extends WebTestBase {
       'scheduler[id]' => 'crontab',
     );
     $this->drupalPostForm(NULL, $job_configuration, t('Save'));
-    $this->drupalPostForm('admin/config/system/cron/jobs/manage/' . $this->job_id, ['scheduler[configuration][rules][0]' => '0+@ * * * *'], t('Save'));
+    $this->drupalPostForm('admin/config/system/cron/jobs/manage/' . $this->job_id, ['scheduler[rules][0]' => '0+@ * * * *'], t('Save'));
     $this->assertText('0+@ * * * *');
 
     // Try editing the rule to an invalid one.
+    $this->drupalGet('admin/config/system/cron/jobs');
     $this->clickLink('Edit');
-    $this->drupalPostForm(NULL, ['scheduler[configuration][rules][0]' => '*//15+@ *-2 * * *'], t('Save'));
+    $this->drupalPostForm(NULL, ['scheduler[rules][0]' => '*//15+@ *-2 * * *'], t('Save'));
     $this->assertText('Rule is invalid');
     $this->assertTitle('Edit job | Drupal');
 
@@ -191,7 +197,19 @@ class CronJobFormTest extends WebTestBase {
     $this->assertEqual((string) $xpath[0]->td[4], 'Launched manually by ' . $user);
     $this->assertEqual((string) $xpath[0]->td[5], '00:00');
 
-
+    // Test that the plugin from ultimate_cron_plugin_test is available
+    $this->drupalGet('admin/config/system/cron/jobs');
+    $this->clickLink(t('Edit'), 0);
+    $job_configuration = array(
+      'scheduler[id]' => 'simpler',
+    );
+    $this->drupalPostForm(NULL, $job_configuration, t('Select'));
+    $this->assertText('Simpler Run cron every', 'New plugin label is found.');
+    $this->assertOption('edit-scheduler-rules-0', '* * * * *');
+    $this->assertNoOption('edit-scheduler-rules-0', '0+@ 0 * * 0', 'Option available in Simpler plugin is not shown.');
+    $job_configuration['scheduler[rules][0]'] = '* * * * *';
+    $this->drupalPostForm(NULL, $job_configuration, t('Save'));
+    $this->assertText('Simpler Every 1 min', 'Plugin label override used');
 
   }
 
