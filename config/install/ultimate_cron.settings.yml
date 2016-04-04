@@ -28,8 +28,8 @@ launcher:
 logger:
   cache:
     id: 'cache'
-    bin: 'cache_ultimate_cron'
-    timeout: 0
+    bin: 'ultimate_cron_logger'
+    timeout: -1
   database:
     id: 'database'
     method: '3'
